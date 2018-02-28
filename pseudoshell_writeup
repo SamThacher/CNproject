@@ -1,0 +1,29 @@
+To begin, I thought about what the shell needed to function.
+It needed to read the input, parse the input, and execute the input.
+First I decided to read the input. I made use of the read functionality,
+and malloc to create the correct max-sized char*. 
+Then I made sure no errors were given due to this, by checking if the char*
+was correctly initilized, and also checking if the input was read in correctly.
+Then I had the parse function. This function read through the input and gave 
+back a list of tokens, (list of arguments) by removing all delimiting characters
+Then I went on to create the built in functions, cd, history and exit. cd was
+easy to implement, i used chdir to move between directories. For exit, I 
+returned 0 to the main function, which would halt the while loop. 
+History was a the difficult one to implement.I made two global variables, 
+char** with size 100 and a history_size integer. These kept track of all the 
+histories. Everytime an input was taken, I added it to the char** and 
+incremented the size. And everytime one adds an entry, it also checked if it
+was larger than the size of the array, and if it is it removed the first 
+element, pushed all other elements up by one, and added the new element in the
+end of the array.
+I also created a -c, which freed all the data in history, and [offset] which 
+grabbed the input from given offset and execute it. The one with no input 
+was a for loop printing all the elements in the list in chronological order.
+
+Piping was another difficulty. I checked if the given input is a pipe in the 
+main function, and if it is, then I parsed it specially, by splitting up the 
+first part of the pipe arguments and the rest. Then I proceeded to push the two
+into a new function, which executes pipes only. With given inputs, the 
+pipe executer forked twice to run both given inputs. 
+(if the second one also happened to contain '|' then parse again and execute 
+with result of first two)
