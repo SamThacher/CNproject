@@ -16,6 +16,7 @@
 
 #include "ns3/ls-message.h"
 #include "ns3/log.h"
+#include "ns3/simulator.h"
 
 using namespace ns3;
 
@@ -74,6 +75,9 @@ LSMessage::GetSerializedSize (void) const
       case ND_RSP:
 	size += m_message.ndRsp.GetSerializedSize ();
 	break;
+      case LSP:
+	size += m_message.lsp.GetSerializedSize ();
+	break;
       default:
         NS_ASSERT (false);
     }
@@ -104,6 +108,9 @@ LSMessage::Print (std::ostream &os) const
       case ND_RSP:
         m_message.pingRsp.Print (os);
         break;
+//      case LSP:
+//	m_message.lsp.Print (os);
+//	break;
       default:
         break;  
     }
@@ -133,7 +140,9 @@ LSMessage::Serialize (Buffer::Iterator start) const
       case ND_RSP:
         m_message.ndRsp.Serialize (i);
         break;
-
+      case LSP:
+	m_message.lsp.Serialize (i);
+ 	break;
       default:
         NS_ASSERT (false);   
     }
@@ -165,6 +174,9 @@ LSMessage::Deserialize (Buffer::Iterator start)
       case ND_RSP:
         size += m_message.ndRsp.Deserialize (i);
         break;
+      case LSP:
+	size += m_message.lsp.Deserialize (i);
+	break;
       default:
         NS_ASSERT (false);
     }
@@ -402,6 +414,70 @@ LSMessage::GetNdRsp ()
 {
   return m_message.ndRsp;
 }
+
+uint32_t 
+LSMessage::Lsp::GetSerializedSize (void) const
+{
+  uint32_t size;
+  size = 3*sizeof(uint32_t)*ntable.size + sizeof(uint32_t) + sizeof(uint32_t);
+  return size;
+}
+/*
+void
+LSMessage::Lsp::Print (std::ostream &os) const
+{
+  os << "NdReq:: Message: " << ndMessage << "\n";
+}
+*/
+void
+LSMessage::Lsp::Serialize (Buffer::Iterator &start) const
+{
+  start.WriteHtonU32 (ntable.size);
+  for(int i = 0; i < ntable.size; i++){
+  start.WriteU32 (ntable.at(i).nodeNumber);
+  start.WriteU32 (ntable.at(i).NeighborAddress.Get());
+  start.WriteU32 (ntable.at(i).InterfaceAddress.Get());
+  }
+  start.WriteU32 (sourceAddress.Get());
+}
+
+uint32_t
+LSMessage::Lsp::Deserialize (Buffer::Iterator &start)
+{
+  int size = (int)start.ReadNtohU32();
+  for(int i = 0; i < size; i++)
+{
+  uint32_t nodeId = uint32_t(start.ReadU32());
+  Ipv4Address neighborAddress = Ipv4Address (start.ReadU32 ());
+  Ipv4Address interfaceAddress = Ipv4Address (start.ReadU32 ());
+  nTableEntry nEntry (neighborAddress, interfaceAddress, nodeId, Simulator::Now());
+  ntable.nTableInsert(nEntry);
+}
+  sourceAddress = Ipv4Address (start.ReadU32());
+  return Lsp::GetSerializedSize ();
+}
+
+void
+LSMessage::SetLsp (neighborTable nTable, Ipv4Address sourceAddress)
+{
+  if (m_messageType == 0)
+    {
+      m_messageType = LSP;
+    }
+  else
+    {
+      NS_ASSERT (m_messageType == LSP);
+    }
+  m_message.lsp.sourceAddress = sourceAddress;
+  m_message.lsp.ntable = nTable;
+}
+
+LSMessage::Lsp
+LSMessage::GetLsp ()
+{
+  return m_message.lsp;
+}
+
 
 //
 //

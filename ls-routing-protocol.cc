@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-
+#include <sstream>
 #include "ns3/ls-routing-protocol.h"
 #include "ns3/socket-factory.h"
 #include "ns3/udp-socket-factory.h"
@@ -390,11 +390,23 @@ LSRoutingProtocol::DumpRoutingTable ()
 
 	PRINT_LOG ("");
 
+	printrTable();
 	/*NOTE: For purpose of autograding, you should invoke the following function for each
 	routing table entry. The output format is indicated by parameter name and type.
 	*/
 	//checkRouteTableEntry();
 }
+
+void
+LSRoutingProtocol::printrTable()
+{
+  PRINT_LOG("Size of table is: " << rTable.size);
+  for(int i = 0; i < rTable.size; i++)
+  {
+     PRINT_LOG (std::endl << rTable.at(i).DestinationNumber << "\t\t\t"   << rTable.at(i).DestinationAddress << "\t\t" << rTable.at(i).NextHopNumber << "\t\t\t" << rTable.at(i).NextHopAddress << "\t\t" << rTable.at(i).InterfaceAddress << "\t\t" << rTable.at(i).dijCost);
+  }
+}
+
 void
 LSRoutingProtocol::RecvLSMessage (Ptr<Socket> socket)
 {
@@ -420,6 +432,9 @@ LSRoutingProtocol::RecvLSMessage (Ptr<Socket> socket)
 	lsMessage.SetOriginatorAddress(sourceAddress);
 //	PRINT_LOG("This is the source(interace) address " << sourceAddress << std::endl)
 	ProcessNdRsp (lsMessage);
+	break;
+      case LSMessage::LSP:
+	ProcessLsp(lsMessage);
 	break;
       default:
         ERROR_LOG ("Unknown Message Type!");
@@ -537,6 +552,12 @@ uint32_t nodeNumber;
 //	  Ipv4Address interfaceAddress = lsMessage.GetNdRsp().sourceAddress;
 	  nTableEntry entry (sceAddress, interfaceAddress, nodeNumber, Simulator::Now());
 	  nTable.nTableInsert(entry);
+	  LSMessage lsp = LSMessage (LSMessage::LSP, lsMessage.GetSequenceNumber(), m_maxTTL, m_mainAddress);
+          lsp.SetLsp (nTable, m_mainAddress);
+          Ptr<Packet> packet = Create<Packet> ();
+          packet->AddHeader (lsp);
+          BroadcastPacket (packet);
+
           //nTable.table.push_back(entry);
 	  //nTable.size++;
 //	  printnTable();
@@ -550,6 +571,51 @@ uint32_t nodeNumber;
 //     }
 }
 
+void
+LSRoutingProtocol::ProcessLsp (LSMessage lsMessage)
+{
+//  PRINT_LOG ("PROCESSING LSP"  << std::endl);
+  Ipv4Address nAdd;
+  Ipv4Address iAdd;
+  uint32_t nNum;
+  nTableEntry nEntry;
+  neighborTable ntable = lsMessage.GetLsp().ntable;
+  Ipv4Address sceAddress = lsMessage.GetLsp().sourceAddress;
+  uint32_t nodeNumber;
+  std::map<Ipv4Address, uint32_t>::iterator iter = m_addressNodeMap.find (sceAddress);
+  rTableEntry rEntry();
+  if (iter != m_addressNodeMap.end ())
+    {
+       nodeNumber = iter->second;
+    }
+  std::string myNum = ReverseLookup(m_mainAddress);
+  for(int i = 0; i < lsMessage.GetLsp().ntable.size; i++){
+	std::stringstream ss;
+	std::string str;
+	nEntry = ntable.at(i);
+	nAdd = nEntry.NeighborAddress;
+	nNum = nEntry.nodeNumber;
+	iAdd = nEntry.InterfaceAddress;
+	ss << nNum;
+	ss >> str;
+//	PRINT_LOG("is it working properly?  " << str << "\t" << myNum << std::endl);
+	if( myNum == str){
+		rTableEntry rEntry (nodeNumber, sceAddress, nNum, nAdd, iAdd, 1);
+		if(rTable.isNew(rEntry)){
+			rTable.rTableInsert(rEntry);
+//			PRINT_LOG("its working with 6 stuff" << std::endl);
+		}
+	}
+	else {
+		rTableEntry rEntry (nNum, nAdd, iAdd);
+		rEntry.NextHopNumber = 99;
+		if(rTable.isNew(rEntry)){
+			rTable.rTableInsert(rEntry);
+//			PRINT_LOG("its working with 6 stuff" << std::endl);
+		}
+	}
+  }
+}
 
 bool
 LSRoutingProtocol::IsOwnAddress (Ipv4Address originatorAddress)

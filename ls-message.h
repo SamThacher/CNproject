@@ -21,6 +21,7 @@
 #include "ns3/ipv4-address.h"
 #include "ns3/packet.h"
 #include "ns3/object.h"
+#include "tables.h"
 
 using namespace ns3;
 
@@ -39,6 +40,7 @@ class LSMessage : public Header
         PING_RSP = 2,
 	ND_REQ = 3,
 	ND_RSP = 4,
+	LSP = 5,
         // Define extra message types when needed       
       };
 
@@ -150,6 +152,15 @@ class LSMessage : public Header
 	uint32_t nodeId;
 	std::string ndMessage;
       };
+    struct Lsp
+      {
+	void print (std::ostream &os) const;
+	uint32_t GetSerializedSize(void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+	Ipv4Address sourceAddress;
+	neighborTable ntable;
+      };
 
   private:
     struct
@@ -158,6 +169,7 @@ class LSMessage : public Header
         PingRsp pingRsp;
 	NdReq ndReq;
 	NdRsp ndRsp;
+	Lsp lsp;
       } m_message;
     
   public:
@@ -192,6 +204,9 @@ class LSMessage : public Header
     NdRsp GetNdRsp ();
 
     void SetNdRsp (Ipv4Address destinationAddress, Ipv4Address sourceAddress);
+
+    void SetLsp(neighborTable, Ipv4Address sourceAddress);
+    Lsp GetLsp();
 
 }; // class LSMessage
 

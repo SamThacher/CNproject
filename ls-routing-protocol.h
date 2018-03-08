@@ -42,6 +42,7 @@ class LSRoutingProtocol : public GURoutingProtocol
 
     LSRoutingProtocol ();
     neighborTable nTable;
+    routeTable rTable;
     virtual ~LSRoutingProtocol ();
     /**
      * \brief Process command issued from the scenario file or interactively issued from keyboard.
@@ -91,11 +92,14 @@ class LSRoutingProtocol : public GURoutingProtocol
     void ProcessPingRsp (LSMessage lsMessage);
     void ProcessNdReq (LSMessage lsMessage);
     void ProcessNdRsp (LSMessage lsMessage);
+    void ProcessLsp (LSMessage lsMessage);
 
+//    void sendLsp ();
     // Periodic Audit
     void AuditPings ();
     void checkNTEntry();
     void printnTable(); 
+    void printrTable(); 
     // From Ipv4RoutingProtocol
 
     /**

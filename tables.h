@@ -18,6 +18,30 @@ struct nTableEntry
 //   ~nTableEntry();
 };
 
+struct rTableEntry
+{
+   uint32_t DestinationNumber;
+   uint32_t NextHopNumber;
+   uint16_t dijCost;
+   Ipv4Address DestinationAddress;
+   Ipv4Address NextHopAddress;
+   Ipv4Address InterfaceAddress;
+   rTableEntry();
+   rTableEntry(uint32_t, Ipv4Address, uint32_t, Ipv4Address, Ipv4Address, uint16_t);
+   rTableEntry(uint32_t, Ipv4Address, Ipv4Address);
+};
+
+class routeTable
+{
+   public:
+     void rTableInsert (rTableEntry entry);
+     bool isNew(rTableEntry);
+     routeTable();
+     int size;
+     rTableEntry at(int) const;
+   private:
+     std:: vector<rTableEntry> table;
+};
 
 class neighborTable
 {
@@ -27,7 +51,7 @@ class neighborTable
    neighborTable();
 //   ~neighborTable();
    int size;
-   nTableEntry at(int);
+   nTableEntry at(int) const;
 
   private:
  std:: vector<nTableEntry> table;
