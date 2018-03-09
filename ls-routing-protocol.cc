@@ -403,7 +403,7 @@ LSRoutingProtocol::printrTable()
   PRINT_LOG("Size of table is: " << rTable.size);
   for(int i = 0; i < rTable.size; i++)
   {
-     PRINT_LOG (std::endl << rTable.at(i).DestinationNumber << "\t\t\t"   << rTable.at(i).DestinationAddress << "\t\t" << rTable.at(i).NextHopNumber << "\t\t\t" << rTable.at(i).NextHopAddress << "\t\t" << rTable.at(i).InterfaceAddress << "\t\t" << rTable.at(i).dijCost);
+     PRINT_LOG (rTable.at(i).DestinationNumber << "\t\t\t"   << rTable.at(i).DestinationAddress << "\t\t" << rTable.at(i).NextHopNumber << "\t\t\t" << rTable.at(i).NextHopAddress << "\t\t" << rTable.at(i).InterfaceAddress << "\t\t" << rTable.at(i).dijCost);
   }
 }
 
@@ -602,6 +602,9 @@ LSRoutingProtocol::ProcessLsp (LSMessage lsMessage)
 	if( myNum == str){
 		rTableEntry rEntry (nodeNumber, sceAddress, nNum, nAdd, iAdd, 1);
 		if(rTable.isNew(rEntry)){
+			int pos = rTable.isNewPos(rEntry);
+			if(pos != -999)
+			{rTable.remove(i);}
 			rTable.rTableInsert(rEntry);
 //			PRINT_LOG("its working with 6 stuff" << std::endl);
 		}
@@ -609,11 +612,22 @@ LSRoutingProtocol::ProcessLsp (LSMessage lsMessage)
 	else {
 		rTableEntry rEntry (nNum, nAdd, iAdd);
 		rEntry.NextHopNumber = 99;
+		rEntry.dijCost = 42588;
 		if(rTable.isNew(rEntry)){
+			int pos = rTable.isNewPos(rEntry);
+			if(pos != -999)
+			{rTable.remove(i);}
 			rTable.rTableInsert(rEntry);
 //			PRINT_LOG("its working with 6 stuff" << std::endl);
 		}
 	}
+  }
+  if(m_mainAddress != sceAddress) {
+	  LSMessage lsp = LSMessage (LSMessage::LSP, lsMessage.GetSequenceNumber(), m_maxTTL, m_mainAddress);
+          lsp.SetLsp (lsMessage.GetLsp().ntable, sceAddress);
+          Ptr<Packet> packet = Create<Packet> ();
+          packet->AddHeader (lsp);
+          BroadcastPacket (packet);
   }
 }
 
@@ -665,6 +679,7 @@ LSRoutingProtocol::checkNTEntry ()
     if(nTable.at(i).tStamp.GetMilliSeconds() + m_ndLong.GetMilliSeconds() <= Simulator::Now().GetMilliSeconds())
     {
          DEBUG_LOG ("Node Discovery expired. Node Number: " << nTable.at(i).nodeNumber << "  Neighbor Address: " << nTable.at(i).NeighborAddress << " InterfaceAddress : " << nTable.at(i).InterfaceAddress);
+	 nTable.remove(i);
     }
   }
 //  PRINT_LOG (m_checkNeighborTimer.GetDelayLeft());

@@ -1,4 +1,5 @@
 #include "tables.h"
+#include "ns3/log.h"
 
 using namespace ns3;
 
@@ -10,6 +11,19 @@ void neighborTable::nTableInsert (nTableEntry entry)
   table.push_back(entry);
   size++;
 }
+
+void neighborTable::remove(int pos)
+{
+  table.erase(table.begin()+pos);
+  size--;
+}
+
+void routeTable::remove(int pos)
+{
+  table.erase(table.begin()+pos);
+  size--;
+}
+
 /*
 void neighborTable::checkNeighborTableEntry()
 {
@@ -83,9 +97,32 @@ bool routeTable::isNew(rTableEntry entry)
   return true;
 }
 
+int routeTable::isNewPos(rTableEntry entry)
+{
+  for(int i = 0; i < size; i++){
+	if(entry.DestinationNumber == table.at(i).DestinationNumber) {
+		if(entry.dijCost < table.at(i).dijCost)
+		{return i;}
+	}
+  }
+  return -999;
+}
+
 rTableEntry
 routeTable::at(int pos) const
 {
   return table.at(pos);
 }
 
+Ipv4Address
+routeTable::nextHop(Ipv4Address destAddress)
+{
+   for(int i = 0; i < size; i++) {
+	if(table.at(i).DestinationAddress == destAddress){
+		return table.at(i).NextHopAddress;
+	}
+   }
+   Ipv4Address failadd (999);
+   return failadd;
+//   PRINT_LOG("No possible route to given destination");
+}
