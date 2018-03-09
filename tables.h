@@ -36,12 +36,9 @@ class routeTable
    public:
      void rTableInsert (rTableEntry entry);
      bool isNew(rTableEntry);
-     int isNewPos(rTableEntry);
      routeTable();
      int size;
      rTableEntry at(int) const;
-     Ipv4Address nextHop(Ipv4Address);
-     void remove(int);
    private:
      std:: vector<rTableEntry> table;
 };
@@ -55,7 +52,7 @@ class neighborTable
 //   ~neighborTable();
    int size;
    nTableEntry at(int) const;
-   void remove(int);
+
   private:
  std:: vector<nTableEntry> table;
   
