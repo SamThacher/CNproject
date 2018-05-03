@@ -25,6 +25,7 @@
 #include "ns3/chord.h"
 #include "ns3/ipv4-address.h"
 
+#include <openssl/sha.h>
 #include <map>
 #include <set>
 #include <vector>
@@ -42,15 +43,32 @@ class GUChord : public GUApplication
   public:
     static TypeId GetTypeId (void);
     GUChord ();
+    //chord_node node;
     virtual ~GUChord ();
 
     void SendPing (Ipv4Address destAddress, std::string pingMessage);
     void RecvMessage (Ptr<Socket> socket);
     void ProcessPingReq (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
     void ProcessPingRsp (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    void ProcessJoinReq (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    void ProcessJoinRsp (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    void ProcessFindSucReq (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    void ProcessFindSucRsp (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    void ProcessGetPredSucReq (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    void ProcessGetPredSucRsp (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    void ProcessNotifyPred (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    void ProcessNotifySuc (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    void ProcessRingstate (GUChordMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
+    bool CompareHash(unsigned char*, unsigned char*);
     void AuditPings ();
     uint32_t GetNextTransactionId ();
     void StopChord ();
+    void joinChord(std::string);
+    void createChord();
+    void Stabilize();
+    void startRingstate();
+    void nodeLeave();
+    void hashtostr(unsigned char*, std::string &);
 
     // Callback with Application Layer (add more when required)
     void SetPingSuccessCallback (Callback <void, Ipv4Address, std::string> pingSuccessFn);
@@ -70,9 +88,16 @@ class GUChord : public GUApplication
     uint32_t m_currentTransactionId;
     Ptr<Socket> m_socket;
     Time m_pingTimeout;
+    Time m_stabilizeTimeout;
     uint16_t m_appPort;
+    std::string m_pred;
+    std::string m_suc;
+    unsigned char m_pred_hash [20];
+    unsigned char m_suc_hash [20];
+    unsigned char m_my_hash [20];
     // Timers
     Timer m_auditPingsTimer;
+    Timer m_stabilizeTimer;
     // Ping tracker
     std::map<uint32_t, Ptr<PingRequest> > m_pingTracker;
     // Callbacks

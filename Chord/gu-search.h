@@ -34,6 +34,7 @@
 #include "ns3/timer.h"
 #include "ns3/uinteger.h"
 #include "ns3/boolean.h"
+#include <fstream>
 
 using namespace ns3;
 
@@ -51,12 +52,12 @@ class GUSearch : public GUApplication
     void ProcessPingRsp (GUSearchMessage message, Ipv4Address sourceAddress, uint16_t sourcePort);
     void AuditPings ();
     uint32_t GetNextTransactionId ();
-   
 
     // Chord Callbacks
     void HandleChordPingSuccess (Ipv4Address destAddress, std::string message);
     void HandleChordPingFailure (Ipv4Address destAddress, std::string message);
     void HandleChordPingRecv (Ipv4Address destAddress, std::string message);
+    void makeItable(std::string);
 
     // From GUApplication
     virtual void ProcessCommand (std::vector<std::string> tokens);
@@ -84,6 +85,8 @@ class GUSearch : public GUApplication
     Timer m_auditPingsTimer;
     // Ping tracker
     std::map<uint32_t, Ptr<PingRequest> > m_pingTracker;
+    std::map<std::string, std::vector<std::string> > iTable;
+    //std::map<std::string, std::vector<std::string> >::iterator it;
 };
 
 #endif

@@ -96,6 +96,11 @@ GUSearch::StartApplication (void)
   m_chord->SetPingSuccessCallback (MakeCallback (&GUSearch::HandleChordPingSuccess, this)); 
   m_chord->SetPingFailureCallback (MakeCallback (&GUSearch::HandleChordPingFailure, this));
   m_chord->SetPingRecvCallback (MakeCallback (&GUSearch::HandleChordPingRecv, this)); 
+  //////
+  // m_chord->SetGUSearchCallback (MakeCallback (&GUSearch::HandleChordSearchResult, this)); 
+  // m_chord->setGUSearchNodeLeave (MakeCallback (&GUSearch::HandleChordNodeLeave, this));
+  // m_chord->setGUSearchNodeJoin (MakeCallback (&GUSearch::HandleChordNodeJoin, this)); 
+  
   // Start Chord
   m_chord->SetStartTime (Simulator::Now());
   m_chord->Start ();
@@ -173,6 +178,20 @@ GUSearch::ProcessCommand (std::vector<std::string> tokens)
             }
         }
     }
+  if (command == "TABLE")
+  {
+    iterator++;
+    std::string fn = *iterator;
+    makeItable(fn);
+    for(std::map<std::string, std::vector<std::string> >::const_iterator elem = iTable.begin(); elem != iTable.end(); ++elem)
+    {
+      std::cout << elem->first <<" : ";
+      for(std::vector<std::string>::const_iterator i = elem->second.begin(); i != elem->second.end(); ++i)
+        std::cout << *i << " ";
+      std::cout << std::endl;
+    }
+    iterator++;
+  }
 }
 
 void
@@ -284,6 +303,49 @@ GUSearch::AuditPings ()
   m_auditPingsTimer.Schedule (m_pingTimeout); 
 }
 
+void
+GUSearch::makeItable(std::string fileName)
+{
+  std::cout << "workaerofejf" << std::endl;
+  std::ifstream infile;
+  std::string filepath = "./cosc225/keys/";
+  filepath.append(fileName);
+  //fileName = "./cosc225/keys/metadata0.keys";
+  infile.open(filepath.c_str());
+  if (!infile) {
+    std::cout << "Unable to open file " << fileName << std::endl;
+  }
+  else
+    std::cout << "YAYAYAYAYAAAYA" << std::endl;
+  std::string line;
+  std::string delim = " ";
+  while(std::getline(infile, line))
+  {
+    std::string token;
+    std::string docV;
+    std::istringstream iss(line);
+    std::string tmp = iss.str();
+    int pos = tmp.find(delim);
+    docV = tmp.substr(0,pos);
+    tmp.erase(0,pos+delim.length());
+    while((pos = tmp.find(delim)) != std::string::npos)
+    {
+      token = tmp.substr(0,pos);
+      tmp.erase(0,pos+delim.length());
+      if(iTable.find(token)!=iTable.end())
+      {
+        iTable.find(token)->second.push_back(docV);
+      }
+      else
+      {
+        std::vector<std::string> keyVals;
+        keyVals.push_back(docV);
+        iTable.insert(iTable.begin(), std::pair<std::string,std::vector<std::string> >(token,keyVals));
+      }
+    }
+  }
+}
+
 uint32_t
 GUSearch::GetNextTransactionId ()
 {
@@ -311,6 +373,8 @@ GUSearch::HandleChordPingRecv (Ipv4Address destAddress, std::string message)
 {
   SEARCH_LOG ("Chord Layer Received Ping! Source nodeId: " << ReverseLookup(destAddress) << " IP: " << destAddress << " Message: " << message);
 }
+
+
 
 // Override GULog
 

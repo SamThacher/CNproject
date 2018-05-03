@@ -37,6 +37,16 @@ class GUChordMessage : public Header
       {
         PING_REQ = 1,
         PING_RSP = 2,
+        FIND_SUC_REQ = 3,
+        FIND_SUC_RSP = 4,
+        GET_PRED_SUC_REQ = 5,
+        GET_PRED_SUC_RSP = 6,
+        RINGSTATE = 7,
+        NOTIFY_SUC = 8,
+        NOTIFY_PRED = 9,
+        DHASH_LOOK = 10, 
+        JOIN_REQ = 11,
+        JOIN_RSP = 12,
         // Define extra message types when needed       
       };
 
@@ -101,6 +111,90 @@ class GUChordMessage : public Header
         // Payload
         std::string pingMessage;
       };
+    struct FindSucReq
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string NodeId;
+        std::string HNodeId;
+      };
+    struct FindSucRsp
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string NodeId;
+        std::string SNodeId;
+        std::string PNodeId;
+      };
+    struct GetPredSucReq
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string NodeId;
+      };
+    struct GetPredSucRsp
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string NodeId;
+      };
+      struct Ringstate
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string NodeId;
+      };
+    struct NotifySuc
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string NodeId;
+      };
+      struct NotifyPred
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string NodeId;
+      };
+    struct DhashLook
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string pingMessage;
+      };
+      struct JoinReq
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string NodeId;
+      };
+      struct JoinRsp
+      {
+        void Print (std::ostream &os) const;
+        uint32_t GetSerializedSize (void) const;
+        void Serialize (Buffer::Iterator &start) const;
+        uint32_t Deserialize (Buffer::Iterator &start);
+        std::string SNodeId;
+        std::string PNodeId;
+      };
 
 
   private:
@@ -108,6 +202,16 @@ class GUChordMessage : public Header
       {
         PingReq pingReq;
         PingRsp pingRsp;
+        FindSucReq findSucReq;
+        FindSucRsp findSucRsp;
+        GetPredSucRsp getPredSucRsp;
+        GetPredSucReq getPredSucReq;
+        NotifySuc notifySuc;
+        NotifyPred notifyPred;
+        Ringstate ringstate;
+        DhashLook dhashLook;
+        JoinReq joinReq;
+        JoinRsp joinRsp;
       } m_message;
     
   public:
@@ -132,6 +236,29 @@ class GUChordMessage : public Header
      *  \param message Payload String
      */
     void SetPingRsp (std::string message);
+
+    FindSucReq GetFindSucReq();
+    void SetFindSucReq(std::string,std::string);
+    FindSucRsp GetFindSucRsp();
+    void SetFindSucRsp(std::string,std::string,std::string);
+    GetPredSucReq GetGetPredSucReq();
+    void SetGetPredSucReq(std::string);
+    GetPredSucRsp GetGetPredSucRsp();
+    void SetGetPredSucRsp(std::string);
+    Ringstate GetRingstate();
+    void SetRingstate(std::string);
+    NotifySuc GetNotifySuc();
+    void SetNotifySuc(std::string);
+    NotifyPred GetNotifyPred();
+    void SetNotifyPred(std::string);
+    DhashLook GetDhashLook();
+    void SetDhashLook(std::string);
+    JoinReq GetJoinReq();
+    void SetJoinReq(std::string);
+    JoinRsp GetJoinRsp();
+    void SetJoinRsp(std::string,std::string);
+
+
 
 }; // class GUChordMessage
 

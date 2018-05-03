@@ -16,6 +16,11 @@ public:
 	~chord_node();
 	chord_node(int);
 	void notify(chord_node *);
+	void join(chord_node*); //node_id (hashed ip address)
+	void stabilize();
+	void leave_chord(); // node_id (hashed ip address)
+	void chord_debug();
+	bool is_root;
 
 };
 
@@ -30,7 +35,7 @@ public:
 	void stabilize();
 	void leave_chord(int); // node_id (hashed ip address)
 	void chord_debug();
-	chord_node find_node(int);
+	//chord_node find_node(int);
 };
 
 
